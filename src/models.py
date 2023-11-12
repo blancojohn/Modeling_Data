@@ -7,50 +7,62 @@ from eralchemy2 import render_er
 
 Base = declarative_base()
 
-planets_favorites_table = Table(
-    'planets_favorites_table',
+favorites_table = Table(
+    'favorites',
     Base.metadata,
-    Column('planet_favorite_id', Integer, ForeignKey('users_id'), nullable=False, primary_key=True),
-    Column('user_palnet_id', Integer, ForeignKey('users_id'), nullable=False, primary_key=True)
+    Column('favorite_id', Integer, ForeignKey('users.id'), nullable=False, primary_key=True),
+    Column('item_favorite_id', Integer, ForeignKey('users.id'), nullable=False, primary_key=True)
 )
 
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
-    usuarname = Column(String(250), nullable=False)
-    first_name = Column(String(250), nullable=False)
-    last_name = Column(String(250), nullable=False )
+    username = Column(String(250), nullable=False, unique=True)
+    password = Column(String(250), nullable=False)
+    loginStatus = Column(String(250), default=True) #Show messague de Start session.
     email = Column(String (250), nullable=False)
+
+    #Many to many relationship. A user can have on the table many favorites planets or characters and the favorites table can have many users. 
     
-    planets_favorites = relationship(
+    favorites = relationship(
         'User',
-        secondary=planets_favorites,
-        primaryjoin= (planets_favorites_table.c.planet_favorite_id == id),
-        secundaryjoin= (planets_favorites_table.c.user_planet_id == id),
-        backref= backref('users_planets_id', lazy= 'dynamic')
+        secondary= favorites_table,
+        primaryjoin= (favorites_table.c.favorite_id == id),
+        secondaryjoin= (favorites_table.c.item_favorite_id == id),
+        backref= backref('items_favorites_id', lazy= 'dynamic')
     )
-    
 
 class Planet(Base):
+    #One to many. One planet can have many users
     __tablename__ = 'planets'
     id = Column(Integer, primary_key=True)
-    name = Column(String(250), nulllable=False)
-    period_rotation = Column(String(250))
-    climate = Column(String(250))
-    terrain = Column(String(259))
-    person_id = Column(Integer, ForeignKey('person.id'))
-    person = relationship()
+    name = Column(String(250), nullable=False)
+    climate = Column(String(250), nullable=True)
+    terrain = Column(String(250), nullable=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user = relationship('User', backref='planets')
 
-class People(Base):
-    __tablename__ = 'peoples'
+class Character(Base):
+    #One to many. One Character can have many users
+    __tablename__= 'characters'
     id = Column(Integer, primary_key=True)
-    name = Column(String,(250), nulllable=False)
-    Starship = Column(String,(250))
-    birth_year = Column(String,(250))
+    name = Column(String(250), nullable=False)
+    Age = Column(String(250), nullable=True)
+    vehicle = Column(String(250), nullable=True)
+    starships = Column(String(250), nullable=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user = relationship('User', backref='characters')
 
- 
+
+
     def to_dict(self):
         return {}
 
 ## Draw from SQLAlchemy base
 render_er(Base, 'diagram.png')
+
+
+    
+
+
+ 
