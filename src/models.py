@@ -7,12 +7,6 @@ from eralchemy2 import render_er
 
 Base = declarative_base()
 
-favorites_table = Table(
-    'favorites',
-    Base.metadata,
-    Column('favorite_id', Integer, ForeignKey('users.id'), nullable=False, primary_key=True),
-    Column('item_favorite_id', Integer, ForeignKey('users.id'), nullable=False, primary_key=True)
-)
 
 class User(Base):
     __tablename__ = 'users'
@@ -22,15 +16,8 @@ class User(Base):
     loginStatus = Column(String(250), default=True) #Show messague de Start session.
     email = Column(String (250), nullable=False)
 
-    #Many to many relationship. A user can have on the table many favorites planets or characters and the favorites table can have many users. 
+
     
-    favorites = relationship(
-        'User',
-        secondary= favorites_table,
-        primaryjoin= (favorites_table.c.favorite_id == id),
-        secondaryjoin= (favorites_table.c.item_favorite_id == id),
-        backref= backref('items_favorites_id', lazy= 'dynamic')
-    )
 
 class Planet(Base):
     #One to many. One planet can have many users
@@ -39,8 +26,6 @@ class Planet(Base):
     name = Column(String(250), nullable=False)
     climate = Column(String(250), nullable=True)
     terrain = Column(String(250), nullable=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    user = relationship('User', backref='planets')
 
 class Character(Base):
     #One to many. One Character can have many users
@@ -50,8 +35,32 @@ class Character(Base):
     Age = Column(String(250), nullable=True)
     vehicle = Column(String(250), nullable=True)
     starships = Column(String(250), nullable=True)
+
+class Favorite_planet(Base):
+    #One to many. One Character can have many users
+    __tablename__= 'favorites_planets'
+    id = Column(Integer, primary_key=True)
+    name_planet= Column(String(250), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    user = relationship('User', backref='characters')
+    user = relationship('User', backref='favorites_planets')
+    planet_id = Column(Integer, ForeignKey('planets.id'), nullable=False)
+    planet = relationship('Planet', backref='favorites_planets')
+
+
+class Favorite_character(Base):
+    #One to many. One Character can have many users
+    __tablename__= 'favorites_characters'
+    id = Column(Integer, primary_key=True)
+    name_planet= Column(String(250), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user = relationship('User', backref='favorites_characters')
+    character_id = Column(Integer, ForeignKey('characters.id'), nullable=False)
+    character = relationship('Character', backref='favorites_characters')
+
+
+
+
+
 
 
 
